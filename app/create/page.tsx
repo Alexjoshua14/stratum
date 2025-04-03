@@ -25,54 +25,24 @@ import { coreResponseSchema } from "@/lib/schemas/coreResponse"
 import { CoreMessage } from "ai"
 import { randomUUID } from "crypto"
 import { useChat } from "@ai-sdk/react"
-
-enum Section {
-  Overview = "Overview",
-  Architecture = "Architecture",
-  Steps = "Steps",
-  Notes = "Notes",
-}
+import { Section } from "@/lib/types"
+import { useEditor } from "@/hooks/use-editor"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
 export default function GuideCreationPage() {
   const router = useRouter()
-  const [activeSection, setActiveSection] = useState(Section.Overview)
-  const [editorContent, setEditorContent] = useState({
-    Overview: "# Overview\n\nStart writing your guide overview here...",
-    Architecture: "# Architecture\n\nDescribe your software architecture here...",
-    Steps: "# Steps\n\n1. First step\n2. Second step\n3. Third step",
-    Notes: "# Notes\n\nAdd any additional notes or references here...",
-  })
+
   const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
   })
+
+  const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion } = useEditor()
+
   const [guideTitle, setGuideTitle] = useState("New Software Guide")
 
-  const handleSectionChange = (section: Section) => {
-    setActiveSection(section)
-  }
 
-  const handleEditorChange = (content: string) => {
-    setEditorContent({
-      ...editorContent,
-      [activeSection]: content,
-    })
-  }
-
-  const insertSuggestion = (suggestion: string) => {
-    const codeBlockRegex = /```([\s\S]*?)```/
-    const match = suggestion.match(codeBlockRegex)
-
-    if (match && match[1]) {
-      const newContent = editorContent[activeSection] + "\n\n" + match[1].trim()
-      setEditorContent({
-        ...editorContent,
-        [activeSection]: newContent,
-      })
-    }
-  }
 
   const handleSave = () => {
     // In a real app, this would save the guide to a database
