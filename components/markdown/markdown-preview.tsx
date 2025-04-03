@@ -10,7 +10,7 @@ interface MarkdownPreviewProps {
 }
 
 export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
-  const [isPreview, setIsPreview] = useState(false)
+  const [isPreview, setIsPreview] = useState(true)
 
   const togglePreview = () => {
     setIsPreview(!isPreview)
@@ -44,6 +44,15 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
     return html
   }
 
+  // Enables the user to toggle render mode via
+  // a center number of simultaneous clicks
+  const handleQuickToggle = (e: MouseEvent) => {
+    if (e.detail === 2) {
+      e.preventDefault()
+      togglePreview()
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-end mb-2">
@@ -57,12 +66,14 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
         <div
           className="flex-grow p-4 bg-background border border-input rounded-md overflow-auto"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+          onClick={handleQuickToggle}
         />
       ) : (
         <textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
           className="flex-grow p-4 bg-background border border-input rounded-md resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          onClick={handleQuickToggle}
         />
       )}
     </div>
