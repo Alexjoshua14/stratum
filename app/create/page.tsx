@@ -20,6 +20,11 @@ import { MarkdownPreview } from "@/components/markdown/markdown-preview"
 import { GuideHeader } from "@/components/guide-header"
 import { useRouter } from "next/navigation"
 import { toggleMarkdownEditor } from "@/lib/ai/tools/editMarkdown"
+import { spark } from "@/lib/ai/spark"
+import { coreResponseSchema } from "@/lib/schemas/coreResponse"
+import { CoreMessage } from "ai"
+import { randomUUID } from "crypto"
+import { useChat } from "@ai-sdk/react"
 
 enum Section {
   Overview = "Overview",
@@ -39,14 +44,10 @@ export default function GuideCreationPage() {
     Steps: "# Steps\n\n1. First step\n2. Second step\n3. Third step",
     Notes: "# Notes\n\nAdd any additional notes or references here...",
   })
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content:
-        "Hello! I'm your AI assistant. Ask me anything about your guide, and I'll help you create better content.",
-    },
-  ])
-  const [inputMessage, setInputMessage] = useState("")
+  const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
+    initialMessages: [],
+    sendExtraMessageFields: true,
+  })
   const [guideTitle, setGuideTitle] = useState("New Software Guide")
 
   const handleSectionChange = (section: Section) => {
@@ -58,37 +59,6 @@ export default function GuideCreationPage() {
       ...editorContent,
       [activeSection]: content,
     })
-  }
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return
-
-    const newMessages = [
-      ...messages,
-      { role: "user", content: inputMessage },
-      {
-        role: "assistant",
-        content: `Here's a suggestion for your ${activeSection} section:
-
-\`\`\`
-${activeSection === "Overview"
-            ? "This guide covers the implementation of a modern web application using React and Next.js."
-            : activeSection === "Architecture"
-              ? "The application follows a client-server architecture with a Next.js frontend and a RESTful API backend."
-              : activeSection === "Steps"
-                ? "1. Set up your development environment\n2. Initialize your Next.js project\n3. Implement the core features"
-                : "Remember to include references to any external libraries or resources used in this guide."
-          }
-\`\`\`
-
-Click on this suggestion to add it to your editor.`,
-      },
-    ]
-
-    setMessages(newMessages)
-    setInputMessage("")
-    // TODO: TEMPORARY
-    handleMCPCommand({ name: "changeSection", section: Section.Architecture })
   }
 
   const insertSuggestion = (suggestion: string) => {
@@ -244,18 +214,18 @@ Click on this suggestion to add it to your editor.`,
           </div>
 
           <div className="p-4 border-t border-border bg-background">
-            <div className="flex items-center space-x-2">
+            <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
               <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
+                value={input}
+                onChange={handleInputChange}
                 placeholder="Ask AI for help with this section..."
                 className="flex-grow"
-                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit}
               />
-              <Button size="icon" onClick={handleSendMessage}>
+              <Button size="icon" onClick={handleSubmit}>
                 <Send className="h-4 w-4" />
               </Button>
-            </div>
+            </form>
           </div>
         </div>
       </div>

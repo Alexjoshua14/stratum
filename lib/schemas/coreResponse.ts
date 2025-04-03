@@ -23,6 +23,7 @@ export const coreResponseSchema = z.object({
   timestamp: z.date(),
   headers: z.record(z.string()),
   body: z.unknown(),
+  text: z.string().describe("Response for the user"),
   sectionTitle: z
     .string()
     .optional()
