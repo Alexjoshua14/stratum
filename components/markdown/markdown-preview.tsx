@@ -1,6 +1,6 @@
 "use client"
 
-import { MouseEventHandler, useState } from "react"
+import { MouseEventHandler, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Eye, Edit } from "lucide-react"
 import { useMulticlick } from "@/hooks/use-multiclick"
@@ -13,11 +13,26 @@ interface MarkdownPreviewProps {
 export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
   const [isPreview, setIsPreview] = useState(true)
 
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
   const togglePreview = () => {
+    setIsPreview(!isPreview)
     if (!isPreview) {
       onChange(content)
+    } else {
+      // Using a callback with a 1ms delay to place this function in the proper
+      // spot within the event queue
+      // This delay places it after the update to isPreview and the 1ms places it after
+      // the multiclick handler
+      setTimeout(() => {
+        textareaRef.current?.focus()
+        const length = textareaRef.current?.value.length
+        if (length)
+          textareaRef.current?.setSelectionRange(length, length)
+      }, 1)
+
+      console.log("Changing to editor")
     }
-    setIsPreview(!isPreview)
   }
 
   // Simple markdown rendering (this could be enhanced with a proper markdown library)
@@ -48,15 +63,6 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
     return html
   }
 
-  // Enables the user to toggle render mode via
-  // a center number of simultaneous clicks
-  const handleQuickToggle = (e) => {
-    if (e.detail === 2) {
-      e.preventDefault()
-      togglePreview()
-    }
-  }
-
   const { handleClick } = useMulticlick({
     onTripleClick: togglePreview
   })
@@ -78,6 +84,7 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
         />
       ) : (
         <textarea
+          ref={textareaRef}
           value={content}
           onChange={(e) => onChange(e.target.value)}
           className="flex-grow p-4 bg-background border border-input rounded-md resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"

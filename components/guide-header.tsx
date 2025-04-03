@@ -2,24 +2,27 @@
 
 import { Button } from "@/components/ui/button"
 import { Save, ArrowLeft } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Input } from "./ui/input"
 
 interface GuideHeaderProps {
   title: string
   onSave: () => void
   onBack: () => void
-  onTitleSave: () => void
+  onTitleSave: (ago0: string) => void
 }
 
 export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderProps) {
   const [editingTitle, setEditingStatus] = useState(false)
 
-  const [guidetitle, updateTitle] = useState(title)
+  const [guideTitle, updateTitle] = useState(title)
+
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const toggleEditTitle = () => {
     if (editingTitle) {
-      onTitleSave()
+      onTitleSave(guideTitle)
+      inputRef.current?.blur()
     }
 
     setEditingStatus(prev => !prev)
@@ -27,6 +30,18 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLTextAreaElement>) => {
     console.log("Input is changing for title..", e)
+    updateTitle(e.target.value)
+  }
+
+  const handleTitleSave = () => {
+    console.log("SAVING TITLE")
+    setEditingStatus(false)
+    onTitleSave(guideTitle)
+  }
+
+  const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter')
+      toggleEditTitle()
   }
 
   return (
@@ -38,15 +53,16 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
         {/* {
           !editingTitle ?
             <div onClick={toggleEditTitle}>
-              <h1 className="text-lg font-semibold">{guidetitle}</h1>
+              <h1 className="text-lg font-semibold">{guideTitle}</h1>
             </div>
             : */}
-        <div onClick={toggleEditTitle}>
+        <div onClick={handleTitleSave} onBlur={handleTitleSave}>
           <Input
-            value={guidetitle}
+            ref={inputRef}
+            value={guideTitle}
             onChange={handleInputChange}
             placeholder="Ask AI for help with this section..."
-            onKeyDown={(e) => e.key === "Enter" && toggleEditTitle}
+            onKeyDown={handleEnterKey}
             className={`flex-grow ease-linear duration-150 border-none font-semibold focus-visible:font-normal`}
           />
         </div>

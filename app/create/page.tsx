@@ -42,7 +42,9 @@ export default function GuideCreationPage() {
 
   const [guideTitle, setGuideTitle] = useState("New Software Guide")
 
-
+  const handleTitleSave = (newTitle: string) => {
+    setGuideTitle(newTitle)
+  }
 
   const handleSave = () => {
     // In a real app, this would save the guide to a database
@@ -86,7 +88,7 @@ export default function GuideCreationPage() {
 
   return (
     <div className="flex flex-col md:h-[80dvh] w-full bg-background">
-      <GuideHeader title={guideTitle} onSave={handleSave} onBack={handleBack} />
+      <GuideHeader title={guideTitle} onSave={handleSave} onBack={handleBack} onTitleSave={handleTitleSave} />
 
       <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
         {/* Left Panel */}
