@@ -3,6 +3,7 @@
 import { MouseEventHandler, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Eye, Edit } from "lucide-react"
+import { useMulticlick } from "@/hooks/use-multiclick"
 
 interface MarkdownPreviewProps {
   content: string
@@ -56,6 +57,10 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
     }
   }
 
+  const { handleClick } = useMulticlick({
+    onTripleClick: togglePreview
+  })
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex justify-end mb-2">
@@ -69,14 +74,14 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
         <div
           className="flex-grow p-4 bg-background border border-input rounded-md overflow-auto"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
-          onClick={handleQuickToggle}
+          onClick={handleClick}
         />
       ) : (
         <textarea
           value={content}
           onChange={(e) => onChange(e.target.value)}
           className="flex-grow p-4 bg-background border border-input rounded-md resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          onClick={handleQuickToggle}
+          onClick={handleClick}
         />
       )}
     </div>
