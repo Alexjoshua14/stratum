@@ -148,12 +148,12 @@ Click on this suggestion to add it to your editor.`,
     <div className="flex flex-col md:h-[80dvh] w-full bg-background">
       <GuideHeader title={guideTitle} onSave={handleSave} onBack={handleBack} />
 
-      <div className="flex flex-col md:flex-row h-full w-full">
+      <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
         {/* Left Panel */}
         <div className="relative w-full md:w-1/2 h-1/2 md:h-full min-w-min flex flex-col border-r border-border">
           <SidebarProvider className="min-h-80 h-full">
             <Sidebar
-              variant="inset"
+              variant="floating"
               collapsible="icon"
               className="w-48 h-full pt-12"
             >
@@ -212,7 +212,7 @@ Click on this suggestion to add it to your editor.`,
                 <SidebarTrigger className="mr-2" />
                 <h2 className="text-lg font-medium">{activeSection}</h2>
               </div>
-              <div className="p-4 flex-grow">
+              <div className="p-4 flex-grow overflow-hidden">
                 <MarkdownPreview content={editorContent[activeSection]} onChange={handleEditorChange} />
               </div>
             </div>
