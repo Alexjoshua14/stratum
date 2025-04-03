@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Send, FileText, Box, ListOrdered, StickyNote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,6 +19,7 @@ import {
 import { MarkdownPreview } from "@/components/markdown/markdown-preview"
 import { GuideHeader } from "@/components/guide-header"
 import { useRouter } from "next/navigation"
+import { toggleMarkdownEditor } from "@/lib/ai/tools/editMarkdown"
 
 enum Section {
   Overview = "Overview",
@@ -27,6 +28,8 @@ enum Section {
   Notes = "Notes",
 }
 
+// TODO: Update layout so content on this page in desktop mode takes
+// up exactly the window height, no scrollbar, no gap between footer
 export default function GuideCreationPage() {
   const router = useRouter()
   const [activeSection, setActiveSection] = useState(Section.Overview)
@@ -84,6 +87,8 @@ Click on this suggestion to add it to your editor.`,
 
     setMessages(newMessages)
     setInputMessage("")
+    // TODO: TEMPORARY
+    handleMCPCommand({ name: "changeSection", section: Section.Architecture })
   }
 
   const insertSuggestion = (suggestion: string) => {
@@ -113,81 +118,105 @@ Click on this suggestion to add it to your editor.`,
     router.push("/")
   }
 
+  const editorRef = useRef(null)
+
+  const handleMCPCommand = (command: { name: string, section?: Section }) => {
+    switch (command.name) {
+      case 'save':
+        handleSave();
+        break;
+      case 'back':
+        handleBack();
+        break;
+      case 'toggleMarkdownEditor':
+        toggleMarkdownEditor(editorRef);
+        break;
+      case 'changeSection':
+        if (!command.section) {
+          console.warn("Section not specified");
+          return;
+        }
+        handleSectionChange(command.section);
+        break;
+      default:
+        console.warn(`Unknown command: ${command.name}`);
+        break;
+    }
+  }
+
   return (
-    <div className="flex flex-col md:h-[70dvh] w-[90dvw] bg-background">
+    <div className="flex flex-col md:h-[80dvh] w-full bg-background">
       <GuideHeader title={guideTitle} onSave={handleSave} onBack={handleBack} />
 
-      <div className="flex flex-col md:flex-row flex-grow overflow-hidden">
+      <div className="flex flex-col md:flex-row h-full w-full">
         {/* Left Panel */}
-        <div className="relative w-full md:w-1/2 h-1/2 md:h-full flex flex-col border-r border-border">
-          <div className="flex">
-            <SidebarProvider>
-              <Sidebar
-                variant="inset"
-                collapsible="icon"
-                className="w-48 h-full pt-12"
-              >
-                <SidebarContent>
-                  <SidebarGroup>
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            isActive={activeSection === "Overview"}
-                            onClick={() => handleSectionChange(Section.Overview)}
-                            tooltip="Overview"
-                          >
-                            <FileText className="h-4 w-4 mr-2" />
-                            <span>Overview</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            isActive={activeSection === "Architecture"}
-                            onClick={() => handleSectionChange(Section.Architecture)}
-                            tooltip="Architecture"
-                          >
-                            <Box className="h-4 w-4 mr-2" />
-                            <span>Architecture</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            isActive={activeSection === "Steps"}
-                            onClick={() => handleSectionChange(Section.Steps)}
-                            tooltip="Steps"
-                          >
-                            <ListOrdered className="h-4 w-4 mr-2" />
-                            <span>Steps</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            isActive={activeSection === "Notes"}
-                            onClick={() => handleSectionChange(Section.Notes)}
-                            tooltip="Notes"
-                          >
-                            <StickyNote className="h-4 w-4 mr-2" />
-                            <span>Notes</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </SidebarGroup>
-                </SidebarContent>
-              </Sidebar>
+        <div className="relative w-full md:w-1/2 h-1/2 md:h-full min-w-min flex flex-col border-r border-border">
+          <SidebarProvider className="min-h-80 h-full">
+            <Sidebar
+              variant="inset"
+              collapsible="icon"
+              className="w-48 h-full pt-12"
+            >
+              <SidebarContent>
+                <SidebarGroup>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeSection === "Overview"}
+                          onClick={() => handleSectionChange(Section.Overview)}
+                          tooltip="Overview"
+                        >
+                          <FileText className="h-4 w-4 mr-2" />
+                          <span>Overview</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeSection === "Architecture"}
+                          onClick={() => handleSectionChange(Section.Architecture)}
+                          tooltip="Architecture"
+                        >
+                          <Box className="h-4 w-4 mr-2" />
+                          <span>Architecture</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeSection === "Steps"}
+                          onClick={() => handleSectionChange(Section.Steps)}
+                          tooltip="Steps"
+                        >
+                          <ListOrdered className="h-4 w-4 mr-2" />
+                          <span>Steps</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeSection === "Notes"}
+                          onClick={() => handleSectionChange(Section.Notes)}
+                          tooltip="Notes"
+                        >
+                          <StickyNote className="h-4 w-4 mr-2" />
+                          <span>Notes</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </SidebarContent>
+            </Sidebar>
 
-              <div className="flex-grow flex flex-col overflow-hidden">
-                <div className="flex items-center p-2 border-b border-border">
-                  <SidebarTrigger className="mr-2 " />
-                  <h2 className="text-lg font-medium">{activeSection}</h2>
-                </div>
-                <div className="flex-grow p-4 overflow-auto">
-                  <MarkdownPreview content={editorContent[activeSection]} onChange={handleEditorChange} />
-                </div>
+            <div className="w-full h-full flex flex-col">
+              <div className="flex items-center p-2 border-b border-border">
+                <SidebarTrigger className="mr-2" />
+                <h2 className="text-lg font-medium">{activeSection}</h2>
               </div>
-            </SidebarProvider>
-          </div>
+              <div className="p-4 flex-grow">
+                <MarkdownPreview content={editorContent[activeSection]} onChange={handleEditorChange} />
+              </div>
+            </div>
+          </SidebarProvider>
         </div>
 
         {/* Right Panel */}
