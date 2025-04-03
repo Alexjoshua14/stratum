@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { MouseEventHandler, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Eye, Edit } from "lucide-react"
 
@@ -13,6 +13,9 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
   const [isPreview, setIsPreview] = useState(true)
 
   const togglePreview = () => {
+    if (!isPreview) {
+      onChange(content)
+    }
     setIsPreview(!isPreview)
   }
 
@@ -46,7 +49,7 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
 
   // Enables the user to toggle render mode via
   // a center number of simultaneous clicks
-  const handleQuickToggle = (e: MouseEvent) => {
+  const handleQuickToggle = (e) => {
     if (e.detail === 2) {
       e.preventDefault()
       togglePreview()
