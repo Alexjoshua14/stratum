@@ -45,7 +45,7 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
   }
 
   return (
-    <header className="flex items-center justify-between px-3 py-3 border-b border-border bg-background">
+    <header className="flex items-center justify-between px-3 py-2 border-b border-border bg-background">
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="icon" onClick={onBack}>
           <ArrowLeft className="h-4 w-4" />
@@ -68,8 +68,8 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
         </div>
         {/* } */}
       </div>
-      <Button onClick={onSave}>
-        <Save className="h-4 w-4 mr-2" />
+      <Button onClick={onSave} className="text-xs">
+        <Save className="h-3 w-3 mr-2" />
         Save Guide
       </Button>
     </header>
