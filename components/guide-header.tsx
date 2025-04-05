@@ -61,14 +61,14 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
             ref={inputRef}
             value={guideTitle}
             onChange={handleInputChange}
-            placeholder="Ask AI for help with this section..."
+            placeholder="Untitled Guide"
             onKeyDown={handleEnterKey}
-            className={`flex-grow ease-linear duration-150 border-none font-semibold focus-visible:font-normal`}
+            className={`h-8 ease-linear duration-150 border-none font-semibold focus-visible:font-normal`}
           />
         </div>
         {/* } */}
       </div>
-      <Button onClick={onSave} className="text-xs">
+      <Button onClick={onSave} className="text-xs h-9 px-3">
         <Save className="h-3 w-3 mr-2" />
         Save Guide
       </Button>
