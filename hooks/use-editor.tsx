@@ -1,5 +1,6 @@
 import { Section } from "@/lib/types";
 import { useState } from "react";
+import { SuggestionData } from "@/lib/schemas/guides";
 
 
 export function useEditor() {
@@ -25,15 +26,18 @@ export function useEditor() {
     })
   }
 
-  const insertSuggestion = (suggestion: string) => {
-    const codeBlockRegex = /```([\s\S]*?)```/
-    const match = suggestion.match(codeBlockRegex)
+  /**
+   * 
+   * @param suggestion - Expected to be in a specific format
+   * 
+   */
+  const insertSuggestion = (suggestion: SuggestionData) => {
+    const { section, content } = suggestion
 
-    if (match && match[1]) {
-      const newContent = editorContent[activeSection] + "\n\n" + match[1].trim()
+    if (section && content) {
       setEditorContent({
         ...editorContent,
-        [activeSection]: newContent,
+        [section]: content.trim(),
       })
     }
   }

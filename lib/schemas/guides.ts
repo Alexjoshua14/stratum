@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { Section } from "../types";
 
 export const guideSchema = z.object({
   id: z.string().uuid(),
@@ -17,3 +18,18 @@ export const guideSchema = z.object({
   is_published: z.boolean().default(false),
   is_draft: z.boolean().default(true),
 });
+
+// TODO: Clean this up so that it is not a duplicate of the one in the types file
+export const SectionSchema = z.enum([
+  Section.Overview,
+  Section.Architecture,
+  Section.Steps,
+  Section.Notes,
+]);
+
+export const suggestionData = z.object({
+  section: SectionSchema,
+  content: z.string().min(1),
+});
+
+export type SuggestionData = z.infer<typeof suggestionData>;

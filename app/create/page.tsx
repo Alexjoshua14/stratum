@@ -20,19 +20,25 @@ import { MarkdownPreview } from "@/components/markdown/markdown-preview"
 import { GuideHeader } from "@/components/guide-header"
 import { useRouter } from "next/navigation"
 import { toggleMarkdownEditor } from "@/lib/ai/tools/editMarkdown"
-import { spark } from "@/lib/ai/spark"
-import { coreResponseSchema } from "@/lib/schemas/coreResponse"
-import { CoreMessage } from "ai"
-import { randomUUID } from "crypto"
 import { useChat } from "@ai-sdk/react"
 import { Section } from "@/lib/types"
 import { useEditor } from "@/hooks/use-editor"
+import { UIMessage } from "ai"
+import { SuggestionData } from "@/lib/schemas/guides"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
 export default function GuideCreationPage() {
   const router = useRouter()
 
+  /**
+   * Ref objects
+   */
+  const editorRef = useRef(null)
+
+  /**
+   * Custom hooks
+   */
   const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
@@ -40,8 +46,14 @@ export default function GuideCreationPage() {
 
   const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion } = useEditor()
 
+  /**
+   * State variables
+   */
   const [guideTitle, setGuideTitle] = useState("New Software Guide")
 
+  /**
+   * Handlers
+   */
   const handleTitleSave = (newTitle: string) => {
     setGuideTitle(newTitle)
   }
@@ -57,10 +69,9 @@ export default function GuideCreationPage() {
 
   const handleBack = () => {
     // In a real app, this would navigate back to the guides list
-    router.push("/")
+    if (window.confirm("Are you sure you want to leave without saving?"))
+      router.push("/")
   }
-
-  const editorRef = useRef(null)
 
   const handleMCPCommand = (command: { name: string, section?: Section }) => {
     switch (command.name) {
@@ -83,6 +94,23 @@ export default function GuideCreationPage() {
       default:
         console.warn(`Unknown command: ${command.name}`);
         break;
+    }
+  }
+
+  const handleSuggestion = (message: UIMessage) => {
+    const section = activeSection
+    const content = message.content
+
+    const codeBlockRegex = /```([\s\S]*?)```/
+    const match = content.match(codeBlockRegex)
+
+    if (match) {
+      const suggestionData: SuggestionData = {
+        section: section,
+        content: match[1].trim(),
+      }
+
+      insertSuggestion(suggestionData)
     }
   }
 
@@ -178,7 +206,7 @@ export default function GuideCreationPage() {
                   ? "ml-auto bg-primary text-primary-foreground"
                   : "mr-auto bg-card hover:bg-accent/50 cursor-pointer"
                   }`}
-                onClick={() => message.role === "assistant" && insertSuggestion(message.content)}
+                onClick={() => message.role === "assistant" && handleSuggestion(message)}
               >
                 <div className="text-sm whitespace-pre-wrap">{message.content}</div>
               </Card>
