@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Send, FileText, Box, ListOrdered, StickyNote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,6 +25,7 @@ import { Section } from "@/lib/types"
 import { useEditor } from "@/hooks/use-editor"
 import { UIMessage } from "ai"
 import { SuggestionData } from "@/lib/schemas/guides"
+import { InputType } from "zlib"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
@@ -32,9 +33,17 @@ export default function GuideCreationPage() {
   const router = useRouter()
 
   /**
+   * Constants
+   */
+  // Pixel threshold to determine if the user is at the bottom of the chat
+  const scrollThreshold = 100
+
+  /**
    * Ref objects
    */
   const editorRef = useRef(null)
+  const bottomSentinelRef = useRef<HTMLDivElement>(null)
+  const chatMessageContainerRef = useRef<HTMLDivElement>(null)
 
   /**
    * Custom hooks
@@ -50,10 +59,39 @@ export default function GuideCreationPage() {
    * State variables
    */
   const [guideTitle, setGuideTitle] = useState("New Software Guide")
+  const [isAtBottom, setIsAtBottom] = useState(true)
+
+  /**
+   * Effect hooks
+   */
+  useEffect(() => {
+    const container = chatMessageContainerRef.current
+    if (container) {
+      container.addEventListener("scroll", handleScroll)
+      return () => {
+        container.removeEventListener("scroll", handleScroll)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isAtBottom) {
+      bottomSentinelRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, isAtBottom])
+
 
   /**
    * Handlers
    */
+  const handleScroll = () => {
+    if (chatMessageContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatMessageContainerRef.current
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight)
+      setIsAtBottom(distanceFromBottom < scrollThreshold)
+    }
+  }
+
   const handleTitleSave = (newTitle: string) => {
     setGuideTitle(newTitle)
   }
@@ -71,6 +109,11 @@ export default function GuideCreationPage() {
     // In a real app, this would navigate back to the guides list
     if (window.confirm("Are you sure you want to leave without saving?"))
       router.push("/")
+  }
+
+  const handleSubmitWrapper: typeof handleSubmit = (...props) => {
+    setIsAtBottom(true)
+    handleSubmit(...props)
   }
 
   const handleMCPCommand = (command: { name: string, section?: Section }) => {
@@ -198,7 +241,10 @@ export default function GuideCreationPage() {
             </p>
           </div>
 
-          <div className="flex-grow overflow-auto p-4 space-y-4">
+          <div
+            className="flex-grow overflow-auto p-4 space-y-4"
+            ref={chatMessageContainerRef}
+          >
             {messages.map((message, index) => (
               <Card
                 key={index}
@@ -211,18 +257,19 @@ export default function GuideCreationPage() {
                 <div className="text-sm whitespace-pre-wrap">{message.content}</div>
               </Card>
             ))}
+            <div ref={bottomSentinelRef} />
           </div>
 
           <div className="p-4 border-t border-border bg-background">
-            <form className="flex items-center space-x-2" onSubmit={handleSubmit}>
+            <form className="flex items-center space-x-2" onSubmit={handleSubmitWrapper}>
               <Input
                 value={input}
                 onChange={handleInputChange}
                 placeholder="Ask AI for help with this section..."
                 className="flex-grow"
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmitWrapper}
               />
-              <Button size="icon" onClick={handleSubmit}>
+              <Button size="icon" onClick={handleSubmitWrapper}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>
