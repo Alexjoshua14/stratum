@@ -6,20 +6,17 @@
  */
 
 import { openai } from "@ai-sdk/openai";
-import { coreResponseSchema } from "../schemas/coreResponse";
-import {
-  CoreMessage,
-  generateObject,
-  generateText,
-  streamText,
-  UIMessage,
-} from "ai";
+import { CoreMessage, streamText } from "ai";
+import sparkToolSet from "./tools/toolSet";
 
 export const spark = async (messages: CoreMessage[]) => {
-  const response = await streamText({
+  const response = streamText({
     model: openai("gpt-4o"),
     messages,
+    tools: { ...sparkToolSet },
+    maxSteps: 5,
   });
+  console.log("Spark response: ", response);
 
   // Should handleMCP get placed here?
   // If it did, would maybe need to pass spark refs
