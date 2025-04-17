@@ -24,7 +24,7 @@ import { useChat } from "@ai-sdk/react"
 import { Section } from "@/lib/types"
 import { useEditor } from "@/hooks/use-editor"
 import { UIMessage } from "ai"
-import { SuggestionData } from "@/lib/schemas/guides"
+import { SectionSchema, SuggestionData } from "@/lib/schemas/guides"
 import { InputType } from "zlib"
 
 // TODO: Update layout so content on this page in desktop mode takes
@@ -51,6 +51,29 @@ export default function GuideCreationPage() {
   const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
+    maxSteps: 5,
+    async onToolCall({ toolCall }) {
+      if (toolCall.toolName === 'switchActiveSection') {
+        try {
+          const args = toolCall.args as { section: Section }
+
+          const section = SectionSchema.parse(args.section)
+
+          // Call the function to switch the active section
+          handleSectionChange(section)
+
+          console.debug("Switching active section to:", section)
+          return `Changed active section to ${section}`
+        } catch (error) {
+          console.error("Error switching section: ", error)
+          return `Error switching section: ${error}`
+        }
+      }
+
+      console.error("No tool matched")
+      return "No tool matched"
+
+    }
   })
 
   const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion } = useEditor()
@@ -79,6 +102,15 @@ export default function GuideCreationPage() {
       bottomSentinelRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, isAtBottom])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1]
+      if (lastMessage.role === "data") {
+        console.log("Received data message:", lastMessage)
+      }
+    }
+  })
 
 
   /**
@@ -254,7 +286,34 @@ export default function GuideCreationPage() {
                   }`}
                 onClick={() => message.role === "assistant" && handleSuggestion(message)}
               >
-                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                {
+
+                  message.parts.map(part => {
+                    switch (part.type) {
+                      case 'text':
+                        return part.text
+                      case 'tool-invocation': {
+                        const callId = part.toolInvocation.toolCallId
+
+                        switch (part.toolInvocation.toolName) {
+                          case 'switchActiveSection': {
+                            switch (part.toolInvocation.state) {
+                              case 'call':
+                                return <div key={callId}>Switching active section..</div>
+                              case 'result':
+                                <div key={callId}>
+                                  Switched to {part.toolInvocation.result.section}!
+                                </div>
+                            }
+                          }
+
+                        }
+                      }
+
+
+                    }
+                  })
+                }
               </Card>
             ))}
             <div ref={bottomSentinelRef} />
