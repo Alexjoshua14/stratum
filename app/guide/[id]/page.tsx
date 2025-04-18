@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
-export default function GuidePage({ params }: { params: { id: string } }) {
+export default function GuidePage({ params }: { 
+  params: Promise<{ id: string }>
+}) {
   // In a real application, we would fetch the guide data based on the ID
   const sampleGuideData = {
     title: "Building a Simple Web Scraper",
