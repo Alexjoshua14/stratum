@@ -1,18 +1,12 @@
 import sparkToolSet from "@/lib/ai/tools/toolSet";
 import { openai } from "@ai-sdk/openai";
 import { streamText } from "ai";
-import { auth } from "@clerk/nextjs/server"
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 // TODO: save all messages including AI message to the database
 export async function POST(req: Request) {
-  const { userId, redirectToSignIn } = await auth()
-
-  if (!userId)
-    return redirectToSignIn()
-  
   const { messages, id } = await req.json();
   console.log("MESSAGE RECIEVED");
 
