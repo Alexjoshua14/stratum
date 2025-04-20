@@ -140,7 +140,7 @@ export default function GuideCreationPage() {
   const handleBack = () => {
     // In a real app, this would navigate back to the guides list
     if (window.confirm("Are you sure you want to leave without saving?"))
-      router.push("/")
+      router.push("/home")
   }
 
   const handleSubmitWrapper: typeof handleSubmit = (...props) => {
