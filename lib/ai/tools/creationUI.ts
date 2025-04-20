@@ -10,8 +10,25 @@ const switchActiveSection = tool({
   }),
 });
 
+const appendToSection = tool({
+  description: "Append markdown to the active section",
+  parameters: z.object({
+    section: z
+      .enum(["Overview", "Architecture", "Steps", "Notes"])
+      .describe("Section to append to"),
+    content: z.string().describe("Markdown content to append"),
+  }),
+});
+
+const getActiveSection = tool({
+  description: "Get the active section of the guide",
+  parameters: z.object({}),
+});
+
 const creationUIToolSet = {
   switchActiveSection: switchActiveSection,
+  appendToSection: appendToSection,
+  getActiveSection: getActiveSection,
 };
 
 export default creationUIToolSet;

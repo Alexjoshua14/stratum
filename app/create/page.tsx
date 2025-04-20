@@ -46,6 +46,44 @@ export default function GuideCreationPage() {
   const chatMessageContainerRef = useRef<HTMLDivElement>(null)
 
   /**
+   * AI Client side tools
+   */
+
+  const switchActiveSection = (args: { section: Section }) => {
+    try {
+      const section = SectionSchema.parse(args.section)
+
+      // Call the function to switch the active section
+      handleSectionChange(section)
+
+      console.debug("Switching active section to:", section)
+      return `Changed active section to ${section}`
+    }
+
+    catch (error) {
+      console.error("Error switching section: ", error)
+      return `Error switching section: ${error}`
+    }
+  }
+
+  const appendToSection = (args: { section: Section, content: string }) => {
+    try {
+      const section = SectionSchema.parse(args.section)
+      const content = args.content
+
+      // Call the function to append to the active section
+      insertSuggestion({ section, content })
+
+      console.debug("Appending to section:", section)
+      return `Appended to ${section} section`
+    } catch (error) {
+      console.error("Error appending to section: ", error)
+      return `Error appending to section: ${error}`
+    }
+
+  }
+
+  /**
    * Custom hooks
    */
   const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
@@ -53,26 +91,17 @@ export default function GuideCreationPage() {
     sendExtraMessageFields: true,
     maxSteps: 5,
     async onToolCall({ toolCall }) {
-      if (toolCall.toolName === 'switchActiveSection') {
-        try {
-          const args = toolCall.args as { section: Section }
-
-          const section = SectionSchema.parse(args.section)
-
-          // Call the function to switch the active section
-          handleSectionChange(section)
-
-          console.debug("Switching active section to:", section)
-          return `Changed active section to ${section}`
-        } catch (error) {
-          console.error("Error switching section: ", error)
-          return `Error switching section: ${error}`
-        }
+      switch (toolCall.toolName) {
+        case 'switchActiveSection':
+          return switchActiveSection(toolCall.args as { section: Section })
+        case 'appendToSection':
+          return appendToSection(toolCall.args as { section: Section, content: string })
+        case 'getActiveSection':
+          return `The current active section is ${activeSection}`
+        default:
+          console.error("Unknown tool:", toolCall.toolName)
+          return "Unknown tool"
       }
-
-      console.error("No tool matched")
-      return "No tool matched"
-
     }
   })
 
