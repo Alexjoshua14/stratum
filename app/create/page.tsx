@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { Send, FileText, Box, ListOrdered, StickyNote } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
 import {
   Sidebar,
   SidebarContent,
@@ -25,7 +24,7 @@ import { Section } from "@/lib/types"
 import { useEditor } from "@/hooks/use-editor"
 import { ToolCall, UIMessage } from "ai"
 import { SectionSchema, SuggestionData } from "@/lib/schemas/guides"
-import { InputType } from "zlib"
+import ChatMessage from "@/components/chat/chat-message"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
@@ -406,57 +405,8 @@ export default function GuideCreationPage() {
             className="flex-grow overflow-auto p-4 space-y-4"
             ref={chatMessageContainerRef}
           >
-            {messages.map((message, index) => (
-              <Card
-                key={index}
-                className={`p-4 max-w-[80%] ${message.role === "user"
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "mr-auto bg-card hover:bg-accent/50 cursor-pointer"
-                  }`}
-                onClick={() => message.role === "assistant" && handleSuggestion(message)}
-              >
-                {
-
-                  message.parts.map(part => {
-                    switch (part.type) {
-                      case 'text':
-                        return part.text
-                      case 'tool-invocation': {
-                        const callId = part.toolInvocation.toolCallId
-
-                        switch (part.toolInvocation.toolName) {
-                          case 'switchActiveSection': {
-                            switch (part.toolInvocation.state) {
-                              case 'call':
-                                return <div key={callId}>Switching active section..</div>
-                              case 'result':
-                                <div key={callId}>
-                                  Switched to {part.toolInvocation.result.section}!
-                                </div>
-                            }
-
-                          }
-
-                          case 'appendToSection': {
-                            switch (part.toolInvocation.state) {
-                              case 'call':
-                                return <div key={callId}>Appending content to {part.toolInvocation.args.section}..</div>
-                              case 'result':
-                                <div key={callId}>
-                                  Switched to {part.toolInvocation.result.section}!
-                                </div>
-                            }
-
-                          }
-
-                        }
-                      }
-
-
-                    }
-                  })
-                }
-              </Card>
+            {messages.map(message => (
+              <ChatMessage message={message} key={message.id} handleSuggestion={handleSuggestion} />
             ))}
             {
               error && (
