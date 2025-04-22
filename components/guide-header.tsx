@@ -7,21 +7,20 @@ import { Input } from "./ui/input"
 
 interface GuideHeaderProps {
   title: string
+  updateTitle: (title: string) => void
   onSave: () => void
   onBack: () => void
   onTitleSave: (ago0: string) => void
 }
 
-export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderProps) {
+export function GuideHeader({ title, updateTitle, onSave, onBack, onTitleSave }: GuideHeaderProps) {
   const [editingTitle, setEditingStatus] = useState(false)
-
-  const [guideTitle, updateTitle] = useState(title)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
   const toggleEditTitle = () => {
     if (editingTitle) {
-      onTitleSave(guideTitle)
+      onTitleSave(title)
       inputRef.current?.blur()
     }
 
@@ -36,7 +35,7 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
   const handleTitleSave = () => {
     console.log("SAVING TITLE")
     setEditingStatus(false)
-    onTitleSave(guideTitle)
+    onTitleSave(title)
   }
 
   const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -53,13 +52,13 @@ export function GuideHeader({ title, onSave, onBack, onTitleSave }: GuideHeaderP
         {/* {
           !editingTitle ?
             <div onClick={toggleEditTitle}>
-              <h1 className="text-lg font-semibold">{guideTitle}</h1>
+              <h1 className="text-lg font-semibold">{title}</h1>
             </div>
             : */}
         <div onClick={handleTitleSave} onBlur={handleTitleSave}>
           <Input
             ref={inputRef}
-            value={guideTitle}
+            value={title}
             onChange={handleInputChange}
             placeholder="Untitled Guide"
             onKeyDown={handleEnterKey}
