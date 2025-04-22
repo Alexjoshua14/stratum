@@ -32,6 +32,25 @@ import { InputType } from "zlib"
 export default function GuideCreationPage() {
   const router = useRouter()
 
+  /** TEMPORARY ***/
+  const [messageCount, setMessageCount] = useState(0)
+  const MESSAGE_RATE_PER_SESSION = 10
+  useEffect(() => {
+    switch (messageCount) {
+      case MESSAGE_RATE_PER_SESSION - 1:
+        console.log("No Messages Left")
+        break
+      case MESSAGE_RATE_PER_SESSION - 2:
+        console.log("1 Message Left")
+        break
+      case MESSAGE_RATE_PER_SESSION - 3:
+        console.log("2 Messages Left")
+        break
+      default:
+    }
+  }, [messageCount])
+
+
   /**
    * Constants
    */
@@ -89,7 +108,7 @@ export default function GuideCreationPage() {
   const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
-    maxSteps: 5,
+    maxSteps: 10,
     async onToolCall({ toolCall }) {
       switch (toolCall.toolName) {
         case 'switchActiveSection':
@@ -102,6 +121,10 @@ export default function GuideCreationPage() {
           console.error("Unknown tool:", toolCall.toolName)
           return "Unknown tool"
       }
+    },
+    onFinish: (message, { usage }) => {
+      setMessageCount(prev => prev + 1)
+      console.log("Message statistics: ", usage)
     }
   })
 
@@ -174,7 +197,13 @@ export default function GuideCreationPage() {
 
   const handleSubmitWrapper: typeof handleSubmit = (...props) => {
     setIsAtBottom(true)
-    handleSubmit(...props)
+
+    // TODO: REMOVE TEMPORARY DAM
+    if (messageCount >= 0 && messageCount < MESSAGE_RATE_PER_SESSION) {
+      handleSubmit(...props)
+    } else {
+      console.log("HIT TEMPORARY MESSAGE RATE LIMIT")
+    }
   }
 
   const handleMCPCommand = (command: { name: string, section?: Section }) => {
@@ -334,6 +363,19 @@ export default function GuideCreationPage() {
                                   Switched to {part.toolInvocation.result.section}!
                                 </div>
                             }
+
+                          }
+
+                          case 'appendToSection': {
+                            switch (part.toolInvocation.state) {
+                              case 'call':
+                                return <div key={callId}>Appending content to ${part.toolInvocation.args.section}..</div>
+                              case 'result':
+                                <div key={callId}>
+                                  Switched to {part.toolInvocation.result.section}!
+                                </div>
+                            }
+
                           }
 
                         }

@@ -14,10 +14,16 @@ export async function POST(req: Request) {
   const res = streamText({
     model: openai("gpt-4o"),
     messages,
+    // prompt: messages[0].content,
     system: coreSystemPrompt,
     tools: { ...sparkToolSet },
-    maxSteps: 5,
+    maxSteps: 10,
+    onFinish: (message) => {
+      console.log("AI message: ", message);
+    },
   });
 
-  return res.toDataStreamResponse();
+  return res.toDataStreamResponse({
+    sendReasoning: true,
+  });
 }

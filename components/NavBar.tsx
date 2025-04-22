@@ -20,7 +20,7 @@ const SignedInView = () => {
           </Link>
         </li>
         <li>
-          <Link href="/home" className="text-sm text-foreground/80 hover:text-foreground/100">
+          <Link href="/" className="text-sm text-foreground/80 hover:text-foreground/100">
             Dashboard
           </Link>
         </li>
@@ -77,7 +77,7 @@ export default async function NavBar() {
     <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
       <div className="w-full flex justify-between items-center p-3 px-5 text-sm">
         <div>
-          <Link href="/home">
+          <Link href="/">
             <h2 className={`font-medium text-lg ${commissioner.className} tracking-wider`}>
               Stratum
             </h2>
