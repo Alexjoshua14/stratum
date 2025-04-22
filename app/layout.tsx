@@ -35,10 +35,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="min-h-screen flex flex-col items-center">
+          <main className="min-h-screen h-[100svh] md:h-fit flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col items-center">
               <NavBar />
-              <div className="w-full h-full flex flex-col gap-20 py-2">
+              <div className="w-[100dvw] md:w-full h-full flex flex-col gap-20 py-2">
                 {children}
               </div>
 

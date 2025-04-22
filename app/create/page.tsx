@@ -105,7 +105,7 @@ export default function GuideCreationPage() {
   /**
    * Custom hooks
    */
-  const { messages, setMessages, input, handleInputChange, handleSubmit } = useChat({
+  const { messages, setMessages, input, handleInputChange, handleSubmit, error, reload } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
     maxSteps: 10,
@@ -253,7 +253,7 @@ export default function GuideCreationPage() {
 
       <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
         {/* Left Panel */}
-        <div className="relative w-full md:w-1/2 h-1/2 md:h-full min-w-min flex flex-col border-r border-border">
+        <div className="relative md:w-1/2 h-[50svh] md:h-full min-w-min flex flex-col border-r border-border">
           <SidebarProvider className="min-h-80 h-full">
             <Sidebar
               variant="floating"
@@ -323,7 +323,7 @@ export default function GuideCreationPage() {
         </div>
 
         {/* Right Panel */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col bg-muted/30">
+        <div className="md:w-1/2 h-[50svh] md:h-full flex flex-col bg-muted/30">
           <div className="p-4 bg-background border-b border-border">
             <h2 className="text-lg font-semibold">Ask AI about this section</h2>
             <p className="text-sm text-muted-foreground">
@@ -387,6 +387,16 @@ export default function GuideCreationPage() {
                 }
               </Card>
             ))}
+            {
+              error && (
+                <>
+                  <div>An error occurred.</div>
+                  <Button onClick={() => reload()}>
+                    Retry
+                  </Button>
+                </>
+              )
+            }
             <div ref={bottomSentinelRef} />
           </div>
 
