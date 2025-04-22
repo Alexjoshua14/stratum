@@ -16,8 +16,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Stratum",
+  description: "Stratum is an AI-powered platform for crafting and sharing actionable software project guides. Built with developers in mind, it combines structured editing with conversational AI to help users design, refine, and explore project roadmaps tailored to their experience and goals.",
 };
 
 
