@@ -2,7 +2,7 @@
 
 const GuideCard = () => {
   return (
-    <div className="relative w-44 h-56 hover:brightness-110 transition-all duration-300 ease-in-out">
+    <div className="relative w-44 h-56 hover:brightness-110 hover:-translate-x-1 hover:-translate-y-1 transition-all duration-500 ease-in-out cursor-pointer">
       {/* Back cover of book */}
       <div className="absolute inset-0 left-0.5 bg-gradient-to-tr from-teal-800 to-slate-900 rounded-md shadow-lg">
       </div>
@@ -46,7 +46,7 @@ export default function GuidePage() {
           <span role="img" aria-label="construction" className="text-2xl">🚧</span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-8">
+      <div className="w-full flex flex-wrap justify-center gap-8">
         {
           // In a real application, we would fetch the guide data based on the ID
           // Sample guide data
