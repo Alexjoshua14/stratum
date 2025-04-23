@@ -25,6 +25,7 @@ import { useEditor } from "@/hooks/use-editor"
 import { ToolCall, UIMessage } from "ai"
 import { SectionSchema, SuggestionData } from "@/lib/schemas/guides"
 import ChatMessage from "@/components/chat/chat-message"
+import { set } from "zod"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
@@ -66,8 +67,17 @@ export default function GuideCreationPage() {
   const saveButtonRef = useRef<HTMLButtonElement>(null)
 
   /**
+   * State variables
+   */
+  const [guideTitle, setGuideTitle] = useState("")
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [streamingResponse, setStreamingResponse] = useState(false)
+
+  /**
    * Custom hooks
    */
+  const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent } = useEditor()
+
   const { messages, setMessages, input, handleInputChange, handleSubmit, error, reload } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
@@ -78,16 +88,18 @@ export default function GuideCreationPage() {
       switch (toolCall.toolName) {
         case 'switchActiveSection':
           return switchActiveSection(toolCall.args as { section: Section })
-        case 'appendToSection':
-          return appendToSection(toolCall.args as { section: Section, content: string })
+        case 'insertContent':
+          return insertContent(toolCall.args as { section: Section, content: string, insertAt?: number })
+        case 'removeContent':
+          return removeContent(toolCall.args as { section: Section, start: number, end: number })
         case 'getActiveSection':
           return `The current active section is ${activeSection}`
         case 'saveGuide':
           return saveGuide(toolCall.args as { title: string | undefined })
         case 'getGuideTitle':
           return guideTitle
-        // case 'getGuideContent':
-        //   return getGuideContent(toolCall.args as { section: Section })
+        case 'getGuideContent':
+          return getGuideContent(toolCall.args as { section: Section })
         case 'setGuideTitle':
           return aiSetTitle(toolCall.args as { title: string })
         case 'getMarkdownEditorState': // TODO: IMPLMEMENT THIS, will need forwardRef
@@ -103,16 +115,9 @@ export default function GuideCreationPage() {
     onFinish: (message, { usage }) => {
       setMessageCount(prev => prev + 1)
       console.log("Message statistics: ", usage)
+      setStreamingResponse(false)
     }
   })
-
-  const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion } = useEditor()
-
-  /**
-   * State variables
-   */
-  const [guideTitle, setGuideTitle] = useState("")
-  const [isAtBottom, setIsAtBottom] = useState(true)
 
   /**
    * Effect hooks
@@ -175,6 +180,7 @@ export default function GuideCreationPage() {
 
   const handleSubmitWrapper: typeof handleSubmit = (...props) => {
     setIsAtBottom(true)
+    setStreamingResponse(true)
 
     // TODO: REMOVE TEMPORARY DAM
     if (messageCount >= 0 && messageCount < MESSAGE_RATE_PER_SESSION) {
@@ -224,7 +230,9 @@ export default function GuideCreationPage() {
     }
   }
 
-  const appendToSection = (args: { section: Section, content: string }) => {
+  const insertContent = (args: { section: Section, content: string, insertAt?: number }) => {
+    console.log("Adding to section:", args.section)
+    console.log("Content to add:", args.content.slice(0, 25))
     try {
       // Ensure the section is valid
       const section = SectionSchema.parse(args.section)
@@ -238,15 +246,16 @@ export default function GuideCreationPage() {
       const content = sanitizedContent
 
       // Call the function to append to the active section
-      insertSuggestion({ section, content })
+      insertSuggestion({ section, content }, args.insertAt)
 
-      console.debug("Appending to section:", section)
-      return `Appended to ${section} section`
+      console.debug("Adding to section: ", section)
+      return `Added to ${section} section`
     } catch (error) {
       console.error("Error appending to section: ", error)
       return `Error appending to section: ${error}`
     }
   }
+
 
   const saveGuide = (args: { title: string | undefined }) => {
     if (guideTitle.trim() === "") {
@@ -428,9 +437,9 @@ export default function GuideCreationPage() {
                 onChange={handleInputChange}
                 placeholder="Ask AI for help with this section..."
                 className="flex-grow"
-                onKeyDown={(e) => e.key === "Enter" && handleSubmitWrapper}
+                onKeyDown={(e) => e.key === "Enter" && !streamingResponse && handleSubmitWrapper}
               />
-              <Button size="icon" onClick={handleSubmitWrapper}>
+              <Button size="icon" onClick={handleSubmitWrapper} disabled={streamingResponse} className="transition-all duration-300">
                 <Send className="h-4 w-4" />
               </Button>
             </form>

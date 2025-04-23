@@ -10,13 +10,28 @@ const switchActiveSection = tool({
   }),
 });
 
-const appendToSection = tool({
-  description: "Append markdown to the active section",
+const insertContent = tool({
+  description: "Insert markdown to the specified section",
   parameters: z.object({
     section: z
       .enum(["Overview", "Architecture", "Steps", "Notes"])
       .describe("Section to append to"),
     content: z.string().describe("Markdown content to append"),
+    insertAt: z
+      .number()
+      .optional()
+      .describe("Index to insert the content at, if not provided, append"),
+  }),
+});
+
+const removeContent = tool({
+  description: "Remove content from the specified section",
+  parameters: z.object({
+    section: z
+      .enum(["Overview", "Architecture", "Steps", "Notes"])
+      .describe("Section to remove content from"),
+    start: z.number().describe("Start index of the content to remove"),
+    end: z.number().describe("End index of the content to remove"),
   }),
 });
 
@@ -69,12 +84,13 @@ const toggleMarkdownEditor = tool({
 
 const creationUIToolSet = {
   switchActiveSection: switchActiveSection,
-  appendToSection: appendToSection,
+  insertContent: insertContent,
+  removeContent: removeContent,
   getActiveSection: getActiveSection,
   saveGuide: saveGuide,
   getGuideTitle: getGuideTitle,
   setGuideTitle: setGuideTitle,
-  // getGuideContent: getGuideContent,
+  getGuideContent: getGuideContent,
   getMarkdownEditorState: getMarkdownEditorState,
   toggleMarkdownEditor: toggleMarkdownEditor,
 };

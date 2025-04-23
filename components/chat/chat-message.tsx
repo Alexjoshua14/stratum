@@ -1,7 +1,7 @@
 import { UIMessage } from 'ai'
 import { FC } from 'react'
 import { Card } from '../ui/card'
-import ReactMarkdown from 'react-markdown'
+import Markdown from 'react-markdown'
 import rehypeHighlight from 'rehype-highlight'
 
 interface ChatMessageProps {
@@ -25,9 +25,12 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, handleSuggestion }) => {
           switch (part.type) {
             case 'text': {
               return (
-                <ReactMarkdown key={index} rehypePlugins={[rehypeHighlight]}>
+                <Markdown
+                  key={index}
+                  rehypePlugins={[rehypeHighlight]}
+                >
                   {part.text}
-                </ReactMarkdown>
+                </Markdown>
               )
             }
 
