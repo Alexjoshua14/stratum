@@ -9,8 +9,11 @@ import { createClient } from "@/utils/supabase/server";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuTrigger, NavigationMenuContent, NavigationMenuLink } from "./ui/navigation-menu"
 import { Sign } from "crypto"
 import supabase from "@/lib/supabaseClient"
+import { SignedIn, SignedOut, SignInButton, SignOutButton, SignUpButton, useClerk, UserButton } from "@clerk/nextjs"
+import { currentUser } from "@clerk/nextjs/server"
 
-const SignedInView = () => {
+const SignedInView = async () => {
+  const user = await currentUser()
   return (
     <div className="flex items-center gap-8">
       <ul className="flex items-center justify-center gap-6">
@@ -25,54 +28,47 @@ const SignedInView = () => {
           </Link>
         </li>
       </ul>
-      <div className="flex items-center  gap-4 hover:scale-110 duration-500 ease-in-out">
+      <UserButton />
+      {/* <div className="flex items-center  gap-4 hover:scale-110 duration-500 ease-in-out">
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger>
-                <Avatar>
-                  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
+                <UserButton />
               </NavigationMenuTrigger>
-              <NavigationMenuContent>
+              <NavigationMenuContent className="p-2 flex flex-col gap-2">
                 <NavigationMenuLink>
-                  <form action={signOutAction}>
-                    <Button type="submit" variant={"outline"}>
-                      Sign out
-                    </Button>
-                  </form>
+                  <div className="flex flex-col items-start border-b-2 pr-2 pb-2">
+                    <p className="text-sm font-medium cursor-default">{user?.firstName}</p>
+                  </div>
+                </NavigationMenuLink>
+                <NavigationMenuLink>
+                  <SignOutButton />
                 </NavigationMenuLink>
               </NavigationMenuContent>
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-      </div>
+      </div> */}
     </div>
   )
 }
 
 const SignedOutView = () => {
   return (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/sign-in">Sign in</Link>
-      </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/sign-up">Sign up</Link>
-      </Button>
-    </div>
+    <div className="flex gap-2 ">
+      <div className="hover:text-accent-foreground px-3 py-1 hover:bg-zinc-100/5 active:bg-zinc-50/5 rounded-lg transition-all duration-300">
+        <SignInButton />
+      </div>
+      <div className="hover:text-accent-foreground px-3 py-1 hover:bg-zinc-100/5 active:bg-zinc-50/5 rounded-lg transition-all duration-300">
+        <SignUpButton />
+      </div>
+    </div >
   )
 
 }
 
 export default async function NavBar() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   return (
     <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
       <div className="w-full flex justify-between items-center p-3 px-5 text-sm">
@@ -83,15 +79,14 @@ export default async function NavBar() {
             </h2>
           </Link>
         </div>
-        {
-          user ? (
-            <SignedInView />
-          ) : (
+        <div className="px-2">
+          <SignedOut>
             <SignedOutView />
-          )
-        }
-
-
+          </SignedOut>
+          <SignedIn>
+            <SignedInView />
+          </SignedIn>
+        </div>
       </div>
     </nav >
   )
