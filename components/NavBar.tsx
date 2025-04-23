@@ -23,8 +23,8 @@ const SignedInView = async () => {
           </Link>
         </li>
         <li>
-          <Link href="/" className="text-sm text-foreground/80 hover:text-foreground/100">
-            Dashboard
+          <Link href="/guide" className="text-sm text-foreground/80 hover:text-foreground/100">
+            Guides
           </Link>
         </li>
       </ul>

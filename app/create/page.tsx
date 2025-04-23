@@ -116,7 +116,11 @@ export default function GuideCreationPage() {
       setMessageCount(prev => prev + 1)
       console.log("Message statistics: ", usage)
       setStreamingResponse(false)
-    }
+    },
+    onError: (error) => {
+      console.error("Error in chat: ", error)
+      setStreamingResponse(false)
+    },
   })
 
   /**

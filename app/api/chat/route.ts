@@ -1,7 +1,7 @@
 import { coreSystemPrompt } from "@/lib/ai/resources/corePrompt";
 import sparkToolSet from "@/lib/ai/tools/toolSet";
-import { createClient } from "@/utils/supabase/server";
 import { openai } from "@ai-sdk/openai";
+import { currentUser } from "@clerk/nextjs/server";
 import { streamText } from "ai";
 
 // Allow streaming responses up to 30 seconds
@@ -21,6 +21,12 @@ export async function POST(req: Request) {
 
   const { messages, id } = await req.json();
   console.log("MESSAGE RECIEVED");
+  const user = await currentUser();
+
+  // TODO: REMOVE THIS CHECK, TEMPORARY secondarry check to ensure for auth
+  if (!user) {
+    return new Response("Unauthorized", { status: 401 });
+  }
 
   const res = streamText({
     model: openai("gpt-4.1-mini"),
