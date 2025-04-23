@@ -30,8 +30,6 @@ export function MarkdownPreview({ content, onChange }: MarkdownPreviewProps) {
         if (length)
           textareaRef.current?.setSelectionRange(length, length)
       }, 1)
-
-      console.log("Changing to editor")
     }
   }
 

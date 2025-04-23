@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     // prompt: messages[0].content,
     system: coreSystemPrompt,
     tools: { ...sparkToolSet },
-    maxSteps: 10,
+    maxSteps: 15,
     // onFinish: (message) => {
     //   console.log("AI message: ", message);
     // },

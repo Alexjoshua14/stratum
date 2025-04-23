@@ -14,7 +14,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, handleSuggestion }) => {
   return (
     <Card
       key={message.id}
-      className={`p-4 max-w-[80%] ${message.role === "user"
+      className={`p-4 max-w-[80%] overflow-hidden ${message.role === "user"
         ? "ml-auto bg-primary text-primary-foreground"
         : "mr-auto bg-card hover:bg-accent/50 cursor-pointer"
         }`}

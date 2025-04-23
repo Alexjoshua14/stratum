@@ -81,7 +81,7 @@ export default function GuideCreationPage() {
   const { messages, setMessages, input, handleInputChange, handleSubmit, error, reload } = useChat({
     initialMessages: [],
     sendExtraMessageFields: true,
-    maxSteps: 10,
+    maxSteps: 15,
     async onToolCall({ toolCall }) {
       // TODO: Move this logic into the separate function below
       // handleToolCall(toolCall)
