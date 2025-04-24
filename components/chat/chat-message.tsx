@@ -48,7 +48,8 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, handleSuggestion }) => {
 
             case 'tool-invocation': {
               const callId = part.toolInvocation.toolCallId
-
+              console.log("Tool invocation caught: ", part.toolInvocation)
+              
               switch (part.toolInvocation.toolName) {
                 case 'switchActiveSection': {
                   switch (part.toolInvocation.state) {
@@ -56,7 +57,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, handleSuggestion }) => {
                       return <div key={callId}>Switching active section..</div>
                     case 'result':
                       <div key={callId}>
-                        Switched to {part.toolInvocation.result.section}!
+                        Switched to {part.toolInvocation.args.section}!
                       </div>
                   }
 
@@ -68,7 +69,7 @@ const ChatMessage: FC<ChatMessageProps> = ({ message, handleSuggestion }) => {
                       return <div key={callId}>Appending content to {part.toolInvocation.args.section}..</div>
                     case 'result':
                       <div key={callId}>
-                        Switched to {part.toolInvocation.result.section}!
+                        Switched to {part.toolInvocation.args.section}!
                       </div>
                   }
 
