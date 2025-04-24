@@ -10,6 +10,7 @@ import Footer from "@/components/footer";
 import NavBar from "@/components/NavBar";
 import { geistSans } from "./fonts";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/next"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -47,6 +48,7 @@ export default function RootLayout({
                 <Footer />
               </div>
             </main>
+            <Analytics />
           </ThemeProvider>
         </body>
       </html>
