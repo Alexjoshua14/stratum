@@ -67,6 +67,10 @@ export function useEditor() {
     )
   }
 
-  return { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent }
+  const handleGuideChange = (content: typeof editorContent) => {
+    setEditorContent(content)
+  }
+
+  return { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent, handleGuideChange }
 
 }

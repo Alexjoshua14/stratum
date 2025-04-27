@@ -22,13 +22,15 @@ import { toggleMarkdownEditor } from "@/lib/ai/tools/editMarkdown"
 import { useChat } from "@ai-sdk/react"
 import { Section } from "@/lib/types"
 import { useEditor } from "@/hooks/use-editor"
-import { ToolCall, UIMessage } from "ai"
-import { SectionSchema, SuggestionData } from "@/lib/schemas/guides"
+import { UIMessage } from "ai"
+import { guideSchema, SectionSchema, SuggestionData, SupabaseGuide } from "@/lib/schemas/guides"
 import ChatMessage from "@/components/chat/chat-message"
-import { set } from "zod"
+import { getGuideById, upsertGuide } from "@/lib/supabase/guides"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
+// TODO: Refactor this page to a SSR page so that we can grab id using dynamic route
+// and move most of logic into child client side components
 export default function GuideCreationPage() {
   const router = useRouter()
 
@@ -72,11 +74,13 @@ export default function GuideCreationPage() {
   const [guideTitle, setGuideTitle] = useState("")
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [streamingResponse, setStreamingResponse] = useState(false)
+  const [guideID, setguideID] = useState<string | null>(null)
+  const [savingGuide, setSavingGuide] = useState<boolean>(false)
 
   /**
    * Custom hooks
    */
-  const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent } = useEditor()
+  const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent, handleGuideChange } = useEditor()
 
   const { messages, setMessages, input, handleInputChange, handleSubmit, error, reload } = useChat({
     initialMessages: [],
@@ -167,14 +171,87 @@ export default function GuideCreationPage() {
     setGuideTitle(newTitle)
   }
 
-  const handleSave = () => {
-    // In a real app, this would save the guide to a database
-    console.log("Saving guide:", {
-      title: guideTitle,
-      content: editorContent,
-    })
-    // Show a success message or redirect
+  async function handleSave() {
+    if (savingGuide) {
+      console.warn("Handle save function call detected while savingGuide is already set to true..")
+      return
+    }
+
+    setSavingGuide(true)
+    try {
+
+      if (guideTitle.trim() == "") {
+        console.log("No guide title set..")
+        return
+      }
+
+      console.log("Saving guide..")
+
+      const guide: SupabaseGuide = {
+        id: guideID ?? undefined,
+        title: guideTitle,
+        overview_md: editorContent[Section.Overview],
+        architecture_md: editorContent[Section.Architecture],
+        notes_md: editorContent[Section.Notes],
+      }
+
+      const res = await upsertGuide(guide)
+      if (res === null) {
+        console.log("Null returned from upsertGuide call")
+      } else {
+        setguideID(res.id)
+      }
+
+      console.log("Upserted guide?..")
+    } catch (err) {
+      console.error("Error encountered while saving guide", err)
+    } finally {
+      setSavingGuide(false)
+    }
   }
+
+  async function updateSelectedGuide(id: string) {
+    const guide = await getGuideById(id)
+
+    if (guide == null) {
+      console.error("No guide found for provided ID..")
+      return false
+    }
+
+    handleGuideChange({
+      Overview: guide?.overview_md ?? "",
+      Architecture: guide?.architecture_md ?? "",
+      Steps: "",
+      Notes: guide?.notes_md ?? ""
+    })
+
+    setGuideTitle(guide?.title ?? "")
+    setguideID(id)
+    return true
+  }
+
+  // const handleSave = () => {
+  //   // In a real app, this would save the guide to a database
+  //   if (guideTitle.trim() === "") {
+  //     console.log("No guide title set..")
+  //     return
+  //   }
+  //   console.log("Saving guide:", {
+  //     title: guideTitle,
+  //     content: editorContent,
+  //   })
+
+  //   const guide: SupabaseGuide = {
+  //     id: guideID ?? undefined,
+  //     title: guideTitle,
+  //     overview_md: editorContent[Section.Overview],
+  //     architecture_md: editorContent[Section.Architecture],
+  //     notes_md: editorContent[Section.Notes],
+  //   }
+
+  //   createOrUpdateGuide(guide)
+  //   // Show a success message or redirect
+  // }
 
   const handleBack = () => {
     // In a real app, this would navigate back to the guides list
@@ -262,6 +339,7 @@ export default function GuideCreationPage() {
 
 
   const saveGuide = (args: { title: string | undefined }) => {
+    console.log("Saving guide with title:", args.title)
     if (guideTitle.trim() === "") {
       if (args.title) {
         setGuideTitle(args.title)
@@ -332,7 +410,16 @@ export default function GuideCreationPage() {
 
   return (
     <div className="flex flex-col md:h-[80dvh] w-full bg-background">
-      <GuideHeader title={guideTitle} updateTitle={setGuideTitle} onSave={handleSave} onBack={handleBack} onTitleSave={handleTitleSave} />
+      <GuideHeader
+        title={guideTitle}
+        updateTitle={setGuideTitle}
+        guideID={guideID}
+        onSave={handleSave}
+        onBack={handleBack}
+        onTitleSave={handleTitleSave}
+        saveButtonDisabled={savingGuide}
+        updateSelectedGuide={updateSelectedGuide}
+      />
 
       <div className="flex flex-col md:flex-row h-full w-full overflow-hidden">
         {/* Left Panel */}

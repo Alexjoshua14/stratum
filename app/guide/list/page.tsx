@@ -1,7 +1,7 @@
-import { GuideCard } from "@/components/guide/guide-card"
+import { getUsersGuides } from "@/lib/supabase/guides"
 
-export default function GuidePage() {
-
+export default async function GuidePage() {
+  const guides = await getUsersGuides()
 
   return (
     <div className="w-dvw h-dvh flex flex-col items-center p-10">
@@ -17,15 +17,13 @@ export default function GuidePage() {
         </div>
       </div>
       <div className="w-full flex flex-wrap justify-center gap-8">
-        {
-          // In a real application, we would fetch the guide data based on the ID
-          // Sample guide data
-          Array.from({ length: 10 }, (_, index) => (
-            <div key={index} className="flex flex-col gap-4">
-              <GuideCard />
-            </div>
-          ))
-        }
+        {guides?.map((guide) => (
+          <div key={guide.id} className="flex gap-2" >
+            <h1>
+              {guide.title}
+            </h1>
+          </div>
+        ))}
       </div>
     </div>
   )

@@ -7,6 +7,20 @@
 import { z } from "zod";
 import { Section } from "../types";
 
+export const supabaseGuideSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(1).max(100),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  overview_md: z.string().optional(),
+  architecture_md: z.string().optional(),
+  notes_md: z.string().optional(),
+  parent_id: z.string().uuid().optional(),
+  user_id: z.string().optional(),
+  visibility: z.enum(["public", "private"]).default("private").optional(),
+});
+export type SupabaseGuide = z.infer<typeof supabaseGuideSchema>;
+
 export const guideSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).max(100),

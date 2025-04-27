@@ -4,16 +4,20 @@ import { Button } from "@/components/ui/button"
 import { Save, ArrowLeft } from "lucide-react"
 import { useRef, useState } from "react"
 import { Input } from "./ui/input"
+import { GuideList } from "./guide/guide-list"
 
 interface GuideHeaderProps {
   title: string
   updateTitle: (title: string) => void
+  guideID: string | null
   onSave: () => void
   onBack: () => void
   onTitleSave: (ago0: string) => void
+  saveButtonDisabled: boolean
+  updateSelectedGuide: (id: string) => Promise<boolean>
 }
 
-export function GuideHeader({ title, updateTitle, onSave, onBack, onTitleSave }: GuideHeaderProps) {
+export function GuideHeader({ title, updateTitle, guideID, onSave, onBack, onTitleSave, saveButtonDisabled, updateSelectedGuide }: GuideHeaderProps) {
   const [editingTitle, setEditingStatus] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -67,10 +71,13 @@ export function GuideHeader({ title, updateTitle, onSave, onBack, onTitleSave }:
         </div>
         {/* } */}
       </div>
-      <Button onClick={onSave} className="text-xs h-9 px-3">
-        <Save className="h-3 w-3 mr-2" />
-        Save Guide
-      </Button>
+      <div className="flex gap-8">
+        <GuideList selectGuide={updateSelectedGuide} activeGuideID={guideID} />
+        <Button onClick={onSave} className="text-xs h-9 px-3" disabled={saveButtonDisabled}>
+          <Save className="h-3 w-3 mr-2" />
+          Save Guide
+        </Button>
+      </div>
     </header>
   )
 }
