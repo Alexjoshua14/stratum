@@ -26,6 +26,7 @@ import { UIMessage } from "ai"
 import { guideSchema, SectionSchema, SuggestionData, SupabaseGuide } from "@/lib/schemas/guides"
 import ChatMessage from "@/components/chat/chat-message"
 import { getGuideById, upsertGuide } from "@/lib/supabase/guides"
+import { getChatMessagesById } from "@/lib/supabase/chat"
 
 // TODO: Update layout so content on this page in desktop mode takes
 // up exactly the window height, no scrollbar, no gap between footer
@@ -74,7 +75,7 @@ export default function GuideCreationPage() {
   const [guideTitle, setGuideTitle] = useState("")
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [streamingResponse, setStreamingResponse] = useState(false)
-  const [guideID, setguideID] = useState<string | null>(null)
+  const [guideID, setguideID] = useState<string>(crypto.randomUUID())
   const [savingGuide, setSavingGuide] = useState<boolean>(false)
 
   /**
@@ -83,6 +84,7 @@ export default function GuideCreationPage() {
   const { editorContent, handleEditorChange, activeSection, handleSectionChange, insertSuggestion, removeContent, handleGuideChange } = useEditor()
 
   const { messages, setMessages, input, handleInputChange, handleSubmit, error, reload } = useChat({
+    id: guideID,
     initialMessages: [],
     sendExtraMessageFields: true,
     maxSteps: 15,
@@ -125,6 +127,9 @@ export default function GuideCreationPage() {
       console.error("Error in chat: ", error)
       setStreamingResponse(false)
     },
+    experimental_prepareRequestBody({ messages, id }) {
+      return { message: messages[messages.length - 1], id }
+    }
   })
 
   /**
@@ -147,13 +152,15 @@ export default function GuideCreationPage() {
   }, [messages, isAtBottom])
 
   useEffect(() => {
-    if (messages.length > 0) {
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage.role === "data") {
-        console.log("Received data message:", lastMessage)
+    async function getMessages() {
+      const dbMessages = await getChatMessagesById(guideID)
+      if (dbMessages) {
+        setMessages(dbMessages)
       }
     }
-  })
+
+    getMessages()
+  }, [guideID])
 
 
   /**
